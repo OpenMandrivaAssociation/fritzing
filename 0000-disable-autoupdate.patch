@@ -1,0 +1,310 @@
+diff -r -U4 fritzing-app-CD-498--orig/phoenix.pro fritzing-app-CD-498--patched/phoenix.pro
+--- fritzing-app-CD-498--orig/phoenix.pro	2019-12-01 14:05:45.000000000 +0100
++++ fritzing-app-CD-498--patched/phoenix.pro	2020-12-20 19:51:08.868234078 +0100
+@@ -164,12 +164,8 @@
+ 
+ RC_FILE = fritzing.rc
+ RESOURCES += phoenixresources.qrc
+ 
+-# Disable this if you have (and want) libgit2 dynamically
+-LIBGIT_STATIC = true
+-include(pri/libgit2detect.pri)
+-
+ include(pri/boostdetect.pri)
+ 
+ include(pri/kitchensink.pri)
+ include(pri/mainwindow.pri)
+diff -r -U4 fritzing-app-CD-498--orig/pri/version.pri fritzing-app-CD-498--patched/pri/version.pri
+--- fritzing-app-CD-498--orig/pri/version.pri	2019-12-01 14:05:45.000000000 +0100
++++ fritzing-app-CD-498--patched/pri/version.pri	2020-12-20 19:52:58.643044850 +0100
+@@ -16,18 +16,13 @@
+ include(gitversion.pri)
+ 
+ HEADERS += \
+ 	src/version/modfiledialog.h \
+-	src/version/updatedialog.h \
+ 	src/version/version.h \
+ 	src/version/versionchecker.h \
+-	src/version/partschecker.h
+ 
+ SOURCES += \
+ 	src/version/modfiledialog.cpp \
+-	src/version/updatedialog.cpp \
+ 	src/version/version.cpp \
+-	src/version/versionchecker.cpp \
+-	src/version/partschecker.cpp
+ 
+ FORMS += \
+ 	src/version/modfiledialog.ui
+diff -r -U4 fritzing-app-0.9.6--orig/src/fapplication.cpp fritzing-app-0.9.6--patched/src/fapplication.cpp
+--- fritzing-app-0.9.6--orig/src/fapplication.cpp	2021-02-21 10:53:04.000000000 +0100
++++ fritzing-app-0.9.6--patched/src/fapplication.cpp	2021-03-14 11:22:15.445418866 +0100
+@@ -26,9 +26,8 @@
+ #include "version/version.h"
+ #include "dialogs/prefsdialog.h"
+ #include "fsvgrenderer.h"
+ #include "version/versionchecker.h"
+-#include "version/updatedialog.h"
+ #include "itemdrag.h"
+ #include "items/wire.h"
+ #include "partsbinpalette/binmanager/binmanager.h"
+ #include "help/tipsandtricks.h"
+@@ -60,9 +60,8 @@
+ #include "sketch/sketchwidget.h"
+ #include "sketch/pcbsketchwidget.h"
+ #include "help/firsttimehelpdialog.h"
+ #include "help/aboutbox.h"
+-#include "version/partschecker.h"
+ 
+ // dependency injection :P
+ #include "referencemodel/sqlitereferencemodel.h"
+ #define CurrentReferenceModel SqliteReferenceModel
+@@ -606,12 +605,8 @@
+ 	cleanupBackups();
+ 
+ 	clearModels();
+ 
+-	if (m_updateDialog) {
+-		delete m_updateDialog;
+-	}
+-
+ 	FSvgRenderer::cleanup();
+ 	ViewLayer::cleanup();
+ 	ViewLayer::cleanup();
+ 	ItemBase::cleanup();
+@@ -779,21 +779,8 @@
+ 
+ 	QFileInfo info(dbPath);
+ 	bool dbExists = (info.size() > 0) && !fullLoad;
+ 
+-	QString sha;
+-	if (!dbExists) {
+-		// fullLoad == true means we are creating the parts database
+-		// so get the sha for last commit of the parts folder and store it in the database
+-		// this sha will be used to determine whether the user's parts folder can be updated from the remote repo
+-		sha = PartsChecker::getSha(dir.absolutePath());
+-		if (sha.isEmpty()) {
+-			DebugDialog::debug(QString("1.6 SHA empty"));
+-			return false;
+-		}
+-		referenceModel->setSha(sha);
+-	}
+-
+ 	// loads local parts, resource parts, and any other parts in files not in the db--these part override db parts with the same moduleID
+ 	QString db = databaseName;
+ 	if (databaseName.isEmpty() && !dbExists) {
+ 		db = dbPath;
+@@ -1217,14 +1212,8 @@
+ 
+ 	splash.hide();
+ 	m_splash = NULL;
+ 
+-	m_updateDialog = new UpdateDialog();
+-	m_updateDialog->setRepoPath(FolderUtils::getAppPartsSubFolderPath(""), m_referenceModel->sha());
+-	connect(m_updateDialog, SIGNAL(enableAgainSignal(bool)), this, SLOT(enableCheckUpdates(bool)));
+-	connect(m_updateDialog, SIGNAL(installNewParts()), this, SLOT(installNewParts()));
+-	checkForUpdates(false);
+-
+ 	return 0;
+ }
+ 
+ void FApplication::registerFont(const QString &fontFile, bool reallyRegister) {
+@@ -1395,57 +1384,8 @@
+ 	ViewLayer::ViewLayerID viewLayerID;
+ };
+ 
+ 
+-void FApplication::checkForUpdates() {
+-	checkForUpdates(true);
+-}
+-
+-void FApplication::checkForUpdates(bool atUserRequest)
+-{
+-	enableCheckUpdates(false);
+-
+-	VersionChecker * versionChecker = new VersionChecker();
+-
+-	QSettings settings;
+-	if (!atUserRequest) {
+-		// if I've already been notified about these updates, don't bug me again
+-		QString lastMainVersionChecked = settings.value("lastMainVersionChecked").toString();
+-		if (!lastMainVersionChecked.isEmpty()) {
+-			versionChecker->ignore(lastMainVersionChecked, false);
+-		}
+-		QString lastInterimVersionChecked = settings.value("lastInterimVersionChecked").toString();
+-		if (!lastInterimVersionChecked.isEmpty()) {
+-			versionChecker->ignore(lastInterimVersionChecked, true);
+-		}
+-	}
+-
+-	QString atom = QString("http%3://fritzing.org/download/feed/atom/%1/%2")
+-	               .arg(PLATFORM_NAME)
+-				   .arg(Version::makeRequestParamsString(true))
+-				   .arg(QSslSocket::supportsSsl() ? "s" : "");
+-	DebugDialog::debug(atom);
+-	versionChecker->setUrl(atom);
+-	m_updateDialog->setAtUserRequest(atUserRequest);
+-	m_updateDialog->setVersionChecker(versionChecker);
+-
+-	if (atUserRequest) {
+-		m_updateDialog->exec();
+-	}
+-}
+-
+-void FApplication::enableCheckUpdates(bool enabled)
+-{
+-	//DebugDialog::debug("before enable check updates");
+-	foreach (QWidget *widget, QApplication::topLevelWidgets()) {
+-		MainWindow *mainWindow = qobject_cast<MainWindow *>(widget);
+-		if (mainWindow) {
+-			mainWindow->enableCheckUpdates(enabled);
+-		}
+-	}
+-	//DebugDialog::debug("after enable check updates");
+-}
+-
+ void FApplication::createUserDataStoreFolderStructures() {
+ 	FolderUtils::createUserDataStoreFolders();
+ 	FolderUtils::copyBin(BinManager::MyPartsBinLocation, BinManager::MyPartsBinTemplateLocation);
+ 	FolderUtils::copyBin(BinManager::SearchBinLocation, BinManager::SearchBinTemplateLocation);
+@@ -2044,12 +1984,9 @@
+ 	RegenerateDatabaseThread * thread = qobject_cast<RegenerateDatabaseThread *>(sender());
+ 	if (thread == NULL) return;
+ 
+ 	QDialog * progressDialog = thread->progressDialog();
+-	if (progressDialog == m_updateDialog) {
+-		m_updateDialog->installFinished(thread->error());
+-	}
+-	else {
++	{
+ 		if (thread->error().isEmpty()) {
+ 			QTimer::singleShot(50, Qt::PreciseTimer, this, SLOT(quit()));
+ 		}
+ 		else {
+@@ -2064,8 +2001,4 @@
+ 	}
+ 
+ 	thread->deleteLater();
+ }
+-
+-void FApplication::installNewParts() {
+-	regeneratePartsDatabaseAux(m_updateDialog);
+-}
+diff -r -U4 fritzing-app-0.9.6--orig/src/fapplication.h fritzing-app-0.9.6--patched/src/fapplication.h
+--- fritzing-app-0.9.6--orig/src/fapplication.h	2021-02-21 10:53:04.000000000 +0100
++++ fritzing-app-0.9.6--patched/src/fapplication.h	2021-03-14 11:22:32.563631341 +0100
+@@ -130,11 +130,8 @@
+ 
+ public slots:
+ 	void preferences();
+ 	void preferencesAfter();
+-	void checkForUpdates();
+-	void checkForUpdates(bool atUserRequest);
+-	void enableCheckUpdates(bool enabled);
+ 	void createUserDataStoreFolderStructures();
+ 	void changeActivation(bool activate, QWidget * originator);
+ 	void updateActivation();
+ 	void topLevelWidgetDestroyed(QObject *);
+@@ -145,9 +142,8 @@
+ 	void newConnection(qintptr socketDescriptor);
+ 	void doCommand(const QString & command, const QString & params, QString & result, int & status);
+ 	void regeneratePartsDatabase();
+ 	void regenerateDatabaseFinished();
+-	void installNewParts();
+ 
+ 
+ protected:
+ 	bool eventFilter(QObject *obj, QEvent *event);
+@@ -210,9 +206,8 @@
+ 	bool m_started = false;
+ 	QStringList m_filesToLoad;
+ 	QString m_libPath;
+ 	QString m_translationPath;
+-	class UpdateDialog * m_updateDialog = nullptr;
+ 	QTimer m_activationTimer;
+ 	QPointer<class FritzingWindow> m_lastTopmostWindow;
+ 	QList<QWidget *> m_orderedTopLevelWidgets;
+ 	QStringList m_arguments;
+diff -r -U4 fritzing-app-0.9.6--orig/src/mainwindow/mainwindow.cpp fritzing-app-0.9.6--patched/src/mainwindow/mainwindow.cpp
+--- fritzing-app-0.9.6--orig/src/mainwindow/mainwindow.cpp	2021-02-21 10:53:04.000000000 +0100
++++ fritzing-app-0.9.6--patched/src/mainwindow/mainwindow.cpp	2021-03-14 11:26:01.398197615 +0100
+@@ -322,9 +322,8 @@
+ 	m_programView = m_programWindow = NULL;
+ 	m_welcomeView = NULL;
+ 	m_windowMenuSeparator = NULL;
+ 	m_schematicWireColorMenu = m_breadboardWireColorMenu = NULL;
+-	m_checkForUpdatesAct = NULL;
+ 	m_fileProgressDialog = NULL;
+ 	m_currentGraphicsView = NULL;
+ 	m_comboboxChanged = false;
+ 
+@@ -2069,15 +2068,8 @@
+ 	}
+ 	FritzingWindow::resizeEvent(event);
+ }
+ 
+-void MainWindow::enableCheckUpdates(bool enabled)
+-{
+-	if (m_checkForUpdatesAct) {
+-		m_checkForUpdatesAct->setEnabled(enabled);
+-	}
+-}
+-
+ void MainWindow::swapSelectedDelay(const QString & family, const QString & prop, QMap<QString, QString> & currPropsMap, ItemBase * itemBase)
+ {
+ 	//DebugDialog::debug("swap selected delay");
+ 	m_swapTimer.stop();
+diff -r -U4 fritzing-app-0.9.6--orig/src/mainwindow/mainwindow.h fritzing-app-0.9.6--patched/src/mainwindow/mainwindow.h
+--- fritzing-app-0.9.6--orig/src/mainwindow/mainwindow.h	2021-02-21 10:53:04.000000000 +0100
++++ fritzing-app-0.9.6--patched/src/mainwindow/mainwindow.h	2021-03-14 11:26:31.686569275 +0100
+@@ -170,9 +170,8 @@
+ 	void notClosableForAWhile();
+ 	QAction *raiseWindowAction();
+ 	QSizeGrip *sizeGrip();
+ 	QStatusBar *realStatusBar();
+-	void enableCheckUpdates(bool enabled);
+ 
+ 	void getPartsEditorNewAnd(ItemBase * fromItem);
+ 	void addDefaultParts();
+ 	void init(ReferenceModel *referenceModel, bool lockFiles);
+@@ -871,9 +870,8 @@
+ 	QAction *m_openHelpAct = nullptr;
+ 	QAction *m_examplesAct = nullptr;
+ 	QAction *m_partsRefAct = nullptr;
+ 	QAction *m_visitFritzingDotOrgAct = nullptr;
+-	QAction *m_checkForUpdatesAct = nullptr;
+ 	QAction *m_aboutQtAct = nullptr;
+ 	QAction *m_reportBugAct = nullptr;
+ 	QAction *m_enableDebugAct = nullptr;
+ 	QAction *m_partsEditorHelpAct = nullptr;
+diff -r -U4 fritzing-app-0.9.6--orig/src/mainwindow/mainwindow_menu.cpp fritzing-app-0.9.6--patched/src/mainwindow/mainwindow_menu.cpp
+--- fritzing-app-0.9.6--orig/src/mainwindow/mainwindow_menu.cpp	2021-02-21 10:53:04.000000000 +0100
++++ fritzing-app-0.9.6--patched/src/mainwindow/mainwindow_menu.cpp	2021-03-14 11:32:36.505063247 +0100
+@@ -1243,12 +1243,8 @@
+ 	m_visitFritzingDotOrgAct = new QAction(tr("Visit fritzing.org"), this);
+ 	m_visitFritzingDotOrgAct->setStatusTip(tr("fritzing.org"));
+ 	connect(m_visitFritzingDotOrgAct, SIGNAL(triggered(bool)), this, SLOT(visitFritzingDotOrg()));
+ 
+-	m_checkForUpdatesAct = new QAction(tr("Check for updates..."), this);
+-	m_checkForUpdatesAct->setStatusTip(tr("Check whether a newer version of Fritzing is available for download"));
+-	connect(m_checkForUpdatesAct, SIGNAL(triggered()), QApplication::instance(), SLOT(checkForUpdates()));
+-
+ 	m_aboutAct = new QAction(tr("&About"), this);
+ 	m_aboutAct->setStatusTip(tr("Show the application's about box"));
+ 	connect(m_aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+ 	m_aboutAct->setMenuRole(QAction::AboutRole);
+@@ -1580,10 +1576,8 @@
+ 	m_helpMenu->addAction(m_partsRefAct);
+ 	m_helpMenu->addSeparator();
+ 	m_helpMenu->addAction(m_partsEditorHelpAct);
+ 	m_helpMenu->addSeparator();
+-	m_helpMenu->addAction(m_checkForUpdatesAct);
+-	m_helpMenu->addSeparator();
+ 	m_helpMenu->addAction(m_reportBugAct);
+ 	m_helpMenu->addAction(m_enableDebugAct);
+ 	m_helpMenu->addSeparator();
+ 	m_helpMenu->addAction(m_aboutAct);
+Only in fritzing-app-CD-498--orig/src/version: partschecker.cpp
+Only in fritzing-app-CD-498--orig/src/version: partschecker.h
+Only in fritzing-app-CD-498--orig/src/version: updatedialog.cpp
+Only in fritzing-app-CD-498--orig/src/version: updatedialog.h

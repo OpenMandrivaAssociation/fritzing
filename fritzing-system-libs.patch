@@ -1,0 +1,11 @@
+diff -up fritzing-app-develop/pri/libgit2detect.pri.omv~ fritzing-app-develop/pri/libgit2detect.pri
+--- fritzing-app-develop/pri/libgit2detect.pri.omv~	2021-11-08 15:41:38.621342248 +0100
++++ fritzing-app-develop/pri/libgit2detect.pri	2021-11-08 15:41:45.737366436 +0100
+@@ -15,6 +15,7 @@
+ 
+ 
+ packagesExist(libgit2) {
++    LIBGIT_STATIC = false
+ } else {
+     LIBGIT_STATIC = true
+ }

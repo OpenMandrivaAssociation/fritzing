@@ -1,3 +1,4 @@
 sources:
-  "fritzing.2010.10.01.source.tar.bz2:"	e0ff31b326ffc5991d9e93324cfc847d55f95181
-  "fritzing.desktop:"	c9c2c26a9e22da4101328e48293097956b6642dd
+  develop.tar.gz: a24d02e600060c5582e9426f9425e289525d1f34
+  develop.zip: bdadf74705e217a42d806f7df0367af011893483
+  Arduino%20Nano%2033%20BLE%20Sense.fzpz: 36f7c1b394c37911433ea169d9e41d64b727307b
