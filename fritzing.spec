@@ -29,6 +29,8 @@ BuildRequires:	pkgconfig(Qt5Xml)
 BuildRequires:	pkgconfig(Qt5Core)
 BuildRequires:	pkgconfig(gl)
 BuildRequires:	pkgconfig(quazip)
+BuildRequires:	qmake5
+BuildRequires:	qt5-macros
 
 %description
 PCB layout tool
