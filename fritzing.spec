@@ -14,6 +14,7 @@ Source0: https://github.com/fritzing/fritzing-app/archive/refs/heads/develop.tar
 Source1: https://github.com/fritzing/fritzing-parts/archive/refs/heads/develop.zip
 # Important extra parts
 Source10: https://content.arduino.cc/assets/Arduino%20Nano%2033%20BLE%20Sense.fzpz
+Source11: https://github.com/adafruit/Fritzing-Library/archive/refs/heads/master.tar.gz
 Patch0: fritzing-system-libs.patch
 Patch1:	https://src.fedoraproject.org/rpms/fritzing/raw/rawhide/f/0000-disable-autoupdate.patch
 BuildRequires:	pkgconfig(zlib)
@@ -44,6 +45,11 @@ sed -i -e 's,quazip5/,QuaZip-Qt5-1.1/quazip/,g' src/utils/folderutils.cpp
 
 LIBGIT_STATIC=false %qmake_qt5 phoenix.pro DEFINES=QUAZIP_INSTALLED
 mv fritzing-parts-develop parts
+cp %{S:10} parts/
+tar xf %{S:11}
+cp -a Fritzing-Library-master/parts/* parts/
+cp -a Fritzing-Library-master/*.fzbz parts/bins/more/
+cp -a Fritzing-Library-master/RPi_B parts/
 
 %build
 %make_build release
@@ -51,6 +57,7 @@ mv fritzing-parts-develop parts
 
 %install
 %make_install INSTALL_ROOT=%{buildroot}
+cp -a parts %{buildroot}%{_datadir}/fritzing/
 
 %files
 %defattr(-,root,root)
