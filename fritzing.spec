@@ -2,7 +2,7 @@
 
 Name: fritzing
 Version: 0.9.9
-Release: 1
+Release: 2
 Summary: PCB layout tool
 License: CC-Attribution-ShareAlike 3.0 Unported
 Group: Sciences/Other
