@@ -2,7 +2,7 @@
 
 Name: fritzing
 Version: 0.9.9
-Release: 3
+Release: 4
 Summary: PCB layout tool
 License: CC-Attribution-ShareAlike 3.0 Unported
 Group: Sciences/Other
@@ -41,7 +41,7 @@ PCB layout tool
 %autosetup -p1 -n fritzing-app-develop -a 1
 # Use system quazip
 rm -rf pri/quazip.pri src/lib/quazip
-sed -i -e 's,quazip5/,QuaZip-Qt5-1.3/quazip/,g' src/utils/folderutils.cpp
+sed -i -e 's,quazip5/,QuaZip-Qt5-1.4/quazip/,g' src/utils/folderutils.cpp
 
 LIBGIT_STATIC=false %qmake_qt5 phoenix.pro DEFINES=QUAZIP_INSTALLED
 mv fritzing-parts-develop parts
