@@ -6,7 +6,7 @@ Release: 4
 Summary: PCB layout tool
 License: CC-Attribution-ShareAlike 3.0 Unported
 Group: Sciences/Other
-Url: http://fritzing.org/
+Url: https://fritzing.org/
 # https://github.com/fritzing/fritzing-app
 # Unfortunately they don't tag releases, so we grab develop snapshots
 # close to release date.
