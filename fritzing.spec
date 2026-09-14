@@ -1,3 +1,5 @@
+%define debug_package %{nil}
+
 Name:		fritzing
 Version:	1.0.8
 Release:	1
