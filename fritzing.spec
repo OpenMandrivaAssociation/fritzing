@@ -89,6 +89,10 @@ CLIPPER1 = $$absolute_path($$PWD/../clipper-6.4.2)
 INCLUDEPATH += $$CLIPPER1
 SOURCES += $$CLIPPER1/clipper.cpp
 EOF
+# qmake's boost compile-test fails in the mock chroot
+cat > pri/boostdetect.pri << 'EOF'
+message("using system Boost")
+EOF
 
 %build
 export FRITZING_GIT_VERSION="5aa56a5"
