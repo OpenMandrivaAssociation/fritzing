@@ -4,4 +4,5 @@ sources:
   Arduino%20Nano%2033%20BLE%20Sense.fzpz: 36f7c1b394c37911433ea169d9e41d64b727307b
   master.tar.gz: d1f2a7acd9669cd2514c67dd5c12977a9fee776d
   svgpp-1.3.1.tar.gz: 045b3fa5f60e9b2681378a5726c43bc97e21134b
-
+  clipper-6.4.2.tar.gz: 05386f11ba6e3e04953678b0f84b3842695d794b
+  ngspice-sharedspice.tar.gz: 869eef751d7d15746c5eb8f26a3e9e6490ae34ee
