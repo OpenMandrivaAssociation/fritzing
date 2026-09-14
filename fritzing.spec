@@ -57,7 +57,12 @@ Fritzing is an Electronic Design Automation tool for makers and hobbyists.
 It offers a breadboard view, a parts library, schematic capture and PCB layout.
 
 %prep
-%autosetup -p1 -n fritzing-app-develop -a 1 -a 2 -a 3 -a 4
+%autosetup -p1 -n fritzing-app-develop
+# newer rpm keeps only the last -a on %%autosetup
+%setup -q -T -D -a 1
+%setup -q -T -D -a 2
+%setup -q -T -D -a 3
+%setup -q -T -D -a 4
 # twitter4j examples have an incompatible license
 rm -f sketches/core/Fritzing\ Creator\ Kit\ DE+EN/creator-kit-*/Fritzing/TwitterSaurus.fzz
 rm -f sketches/core/Fritzing\ Creator\ Kit\ DE+EN/creator-kit-*/Processing/twitter4j-core-2.2.5.jar
