@@ -1,0 +1,43 @@
+diff -r -U4 fritzing-app-b9add9eaa7c426963de20c8514a69d3f15e83bdf--orig/pri/quazipdetect.pri fritzing-app-b9add9eaa7c426963de20c8514a69d3f15e83bdf--patched/pri/quazipdetect.pri
+--- fritzing-app-b9add9eaa7c426963de20c8514a69d3f15e83bdf--orig/pri/quazipdetect.pri	2025-04-02 12:33:24.000000000 +0200
++++ fritzing-app-b9add9eaa7c426963de20c8514a69d3f15e83bdf--patched/pri/quazipdetect.pri	2025-04-30 14:59:55.406652926 +0200
+@@ -1,37 +1,16 @@
+ # Copyright (c) 2021,2024 Fritzing GmbH
+ 
+ message("Using Fritzing quazip detect script.")
+ 
+-# We are currently using a quazip version from this PR:
+-# https://github.com/stachenov/quazip/pull/199
+-# Important:
+-# Quazip is looking for additional maintainers and code reviewers. While the
+-# library is # mostly feature complete, there are a couple of big ticket
+-# issues that need # work. Code review is welcome for all pull requests.
+-# If you are well versed in # Qt and C/C++ please start helping around
+-# and check https://github.com/stachenov/quazip/issues/185
+ QUAZIP_VERSION=1.4
+-QUAZIP_PATH=$$absolute_path($$PWD/../../quazip-$$QT_VERSION-$$QUAZIP_VERSION)intuisphere
+-QUAZIP_INCLUDE_PATH=$$QUAZIP_PATH/include/QuaZip-Qt6-$$QUAZIP_VERSION
+-QUAZIP_LIB_PATH=$$QUAZIP_PATH/lib
++QUAZIP_INCLUDE_PATH=$$system(pkg-config --cflags-only-I quazip1-qt6 2>/dev/null | sed 's/-I//g')
+ 
+ SOURCES += \
+ 	src/zlibdummy.c \
+ 
+-exists($$QUAZIP_PATH) {
+-		message("found quazip in $${QUAZIP_PATH}")
+-	} else {
+-		error("quazip could not be found at $$QUAZIP_PATH")
+-	}
+-
+ INCLUDEPATH += $$QUAZIP_INCLUDE_PATH
+-LIBS += -L$$QUAZIP_LIB_PATH -lquazip1-qt$$QT_MAJOR_VERSION
+-
+-unix {
+-	message("set rpath for quazip")
+-	QMAKE_RPATHDIR += $$QUAZIP_LIB_PATH
+-}
++LIBS += $$system(pkg-config --libs quazip1-qt6 2>/dev/null)
+ 
+ macx {
+ 	LIBS += -lz
+ }

@@ -1,0 +1,27 @@
+--- fritzing-app-b9add9eaa7c426963de20c8514a69d3f15e83bdf--orig/src/simulation/ngspice_simulator.cpp	2025-04-02 12:33:24.000000000 +0200
++++ fritzing-app-b9add9eaa7c426963de20c8514a69d3f15e83bdf--patched/src/simulation/ngspice_simulator.cpp	2025-10-17 17:58:30.938593519 +0200
+@@ -79,9 +79,13 @@
+ #ifdef Q_OS_LINUX
+ 		QString appDir = QCoreApplication::applicationDirPath();
+ 
+ 		if (appDir.endsWith("/usr/bin")) {
++#ifdef Q_PROCESSOR_X86_32
+ 			QString libPath = appDir.left(appDir.length() - 4) + "/lib";
++#else
++			QString libPath = appDir.left(appDir.length() - 4) + "/lib64";
++#endif
+ 			if (QDir(libPath).exists()) {
+ 				libPaths.prepend(libPath);
+ 			}
+ 		}
+@@ -94,9 +98,9 @@
+ 				DebugDialog::debug("  " + path);
+ 			}
+ 		}
+ #ifdef Q_OS_LINUX
+-		const QString libName = "libngspice.so";
++		const QString libName = "libngspice.so.0";
+ #elif defined Q_OS_MACOS
+ 		const QString libName = "libngspice.0.dylib";
+ #elif defined Q_OS_WIN
+ 		const QString libName = "ngspice.dll";

@@ -1,5 +1,7 @@
 sources:
-  develop.tar.gz: a24d02e600060c5582e9426f9425e289525d1f34
-  develop.zip: bdadf74705e217a42d806f7df0367af011893483
+  develop.tar.gz: 11e2627df768b4ff9fc1325bfcb90711c9de8a9a
+  develop.zip: 8dd676f8b57ee48fc3bd66e237dcbbde9c979566
   Arduino%20Nano%2033%20BLE%20Sense.fzpz: 36f7c1b394c37911433ea169d9e41d64b727307b
-  master.tar.gz: 61ae6dc4cd4c1ae25861d1585db3b75dc18a3843
+  master.tar.gz: d1f2a7acd9669cd2514c67dd5c12977a9fee776d
+  svgpp-1.3.1.tar.gz: 045b3fa5f60e9b2681378a5726c43bc97e21134b
+

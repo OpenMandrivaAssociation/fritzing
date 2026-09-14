@@ -1,0 +1,18 @@
+--- a/phoenix.pro
++++ b/phoenix.pro
+@@ -96,14 +96,9 @@
+     QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
+ }
+ unix {
+     !macx { # unix is defined on mac
+-        HARDWARE_PLATFORM = $$system(uname -m)
+-        contains(HARDWARE_PLATFORM, x86_64)|contains(HARDWARE_PLATFORM, aarch64) {
+-            DEFINES += LINUX_64
+-        } else {
+-            DEFINES += LINUX_32
+-        }
++        DEFINES += $$(FRITZING_PLATFORM)
+         LIBS += -lz
+     }
+ 
+     isEmpty(PREFIX) {

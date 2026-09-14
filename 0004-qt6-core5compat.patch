@@ -1,0 +1,13 @@
+--- fritzing-app-394a8bb4791424ffd99f99ebc330264d4becea63--orig/phoenix.pro	2026-04-14 21:30:39.000000000 +0200
++++ fritzing-app-394a8bb4791424ffd99f99ebc330264d4becea63/phoenix.pro	2026-06-04 00:31:43.765090275 +0200
+@@ -163,9 +163,9 @@
+     FILE_ICONS.path = Contents/Resources
+     QMAKE_BUNDLE_DATA += FILE_ICONS
+ }
+ 
+-QT += concurrent core gui network printsupport serialport sql svg widgets xml svgwidgets openglwidgets
++QT += concurrent core core5compat gui network printsupport serialport sql svg widgets xml svgwidgets openglwidgets
+ 
+ RC_FILE = fritzing.rc
+ RESOURCES += phoenixresources.qrc
+ 

@@ -1,0 +1,15 @@
+diff -rU4 fritzing-app-394a8bb4791424ffd99f99ebc330264d4becea63--orig/phoenix.pro fritzing-app-394a8bb4791424ffd99f99ebc330264d4becea63/phoenix.pro
+--- fritzing-app-394a8bb4791424ffd99f99ebc330264d4becea63--orig/phoenix.pro	2026-04-14 21:30:39.000000000 +0200
++++ fritzing-app-394a8bb4791424ffd99f99ebc330264d4becea63/phoenix.pro	2026-06-04 00:11:28.195195724 +0200
+@@ -18,11 +18,9 @@
+ #
+ # ********************************************************************
+ 
+ QT_LEAST=6.5.3
+-QT_MOST=6.10.10
+ !versionAtLeast(QT_VERSION, $${QT_LEAST}):error("Use at least Qt version $${QT_LEAST}")
+-!versionAtMost(QT_VERSION, $${QT_MOST}):error("Use at most Qt version $${QT_MOST}")
+ 
+ CONFIG += debug_and_release
+ CONFIG += c++20
+ 

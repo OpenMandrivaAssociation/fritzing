@@ -1,67 +1,109 @@
-%define debug_package %{nil}
-
-Name: fritzing
-Version: 0.9.9
-Release: 4
-Summary: PCB layout tool
-License: CC-Attribution-ShareAlike 3.0 Unported
-Group: Sciences/Other
-Url: https://fritzing.org/
+Name:		fritzing
+Version:	1.0.8
+Release:	1
+Summary:	Electronic Design Automation software
+License:	GPL-3.0-or-later AND CC-BY-SA-3.0
+Group:		Sciences/Other
+Url:		https://fritzing.org/
+# Upstream no longer tags releases. 1.0.8 (2026-08-12) is develop @ 5aa56a5.
 # https://github.com/fritzing/fritzing-app
-# Unfortunately they don't tag releases, so we grab develop snapshots
-# close to release date.
-Source0: https://github.com/fritzing/fritzing-app/archive/refs/heads/develop.tar.gz
-Source1: https://github.com/fritzing/fritzing-parts/archive/refs/heads/develop.zip
-# Important extra parts
-Source10: https://content.arduino.cc/assets/Arduino%20Nano%2033%20BLE%20Sense.fzpz
-Source11: https://github.com/adafruit/Fritzing-Library/archive/refs/heads/master.tar.gz
-Patch0: fritzing-system-libs.patch
-Patch1:	https://src.fedoraproject.org/rpms/fritzing/raw/rawhide/f/0000-disable-autoupdate.patch
+Source0:	https://github.com/fritzing/fritzing-app/archive/refs/heads/develop.tar.gz
+# https://github.com/fritzing/fritzing-parts
+Source1:	https://github.com/fritzing/fritzing-parts/archive/refs/heads/develop.zip
+# Header-only SVG parser (not packaged separately)
+Source2:	https://github.com/svgpp/svgpp/archive/refs/tags/v1.3.1/svgpp-1.3.1.tar.gz
+# Extra parts
+Source10:	https://content.arduino.cc/assets/Arduino%20Nano%2033%20BLE%20Sense.fzpz
+Source11:	https://github.com/adafruit/Fritzing-Library/archive/refs/heads/master.tar.gz
+Patch0:		0000-disable-autoupdate.patch
+Patch2:		0002-remove-twitter4j.patch
+Patch3:		0003-maximum-qt-version.patch
+Patch4:		0004-qt6-core5compat.patch
+Patch5:		0005-gitversion.patch
+Patch6:		0006-hardware-platform.patch
+Patch10:	0010-quazip-detect.patch
+Patch11:	0011-ngspice-detect.patch
+Patch12:	0012-clipper1-detect.patch
+Patch13:	0013-svgpp-detect.patch
+Patch20:	0020-ngspice-location.patch
+
 BuildRequires:	pkgconfig(zlib)
-BuildRequires:	pkgconfig(Qt5PrintSupport)
-BuildRequires:	pkgconfig(Qt5Svg)
-BuildRequires:	pkgconfig(Qt5Widgets)
-BuildRequires:	pkgconfig(Qt5Gui)
-BuildRequires:	pkgconfig(Qt5Concurrent)
-BuildRequires:	pkgconfig(Qt5Network)
-BuildRequires:	pkgconfig(Qt5SerialPort)
-BuildRequires:	pkgconfig(Qt5Sql)
-BuildRequires:	pkgconfig(Qt5Xml)
-BuildRequires:	pkgconfig(Qt5Core)
+BuildRequires:	pkgconfig(openssl)
+BuildRequires:	pkgconfig(Qt6PrintSupport)
+BuildRequires:	pkgconfig(Qt6Svg)
+BuildRequires:	pkgconfig(Qt6SvgWidgets)
+BuildRequires:	pkgconfig(Qt6Widgets)
+BuildRequires:	pkgconfig(Qt6Gui)
+BuildRequires:	pkgconfig(Qt6Concurrent)
+BuildRequires:	pkgconfig(Qt6Network)
+BuildRequires:	pkgconfig(Qt6SerialPort)
+BuildRequires:	pkgconfig(Qt6Sql)
+BuildRequires:	pkgconfig(Qt6Xml)
+BuildRequires:	pkgconfig(Qt6Core)
+BuildRequires:	pkgconfig(Qt6Core5Compat)
+BuildRequires:	pkgconfig(Qt6OpenGLWidgets)
 BuildRequires:	pkgconfig(gl)
-BuildRequires:	pkgconfig(quazip)
-BuildRequires:	qmake5
-BuildRequires:	qt5-macros
+BuildRequires:	pkgconfig(quazip1-qt6)
+BuildRequires:	pkgconfig(ngspice)
+BuildRequires:	pkgconfig(polyclipping)
+BuildRequires:	qmake-qt6
+BuildRequires:	qt6-qttools-linguist-tools
 BuildRequires:	boost-devel
+# Simulator loads libngspice at runtime
+Requires:	%{_lib}ngspice
 
 %description
-PCB layout tool
+Fritzing is an Electronic Design Automation tool for makers and hobbyists.
+It offers a breadboard view, a parts library, schematic capture and PCB layout.
 
 %prep
-%autosetup -p1 -n fritzing-app-develop -a 1
-# Use system quazip
-rm -rf pri/quazip.pri src/lib/quazip
-sed -i -e 's,quazip5/,QuaZip-Qt5-1.4/quazip/,g' src/utils/folderutils.cpp
+%autosetup -p1 -n fritzing-app-develop -a 1 -a 2
+# twitter4j examples have an incompatible license
+rm -f sketches/core/Fritzing\ Creator\ Kit\ DE+EN/creator-kit-*/Fritzing/TwitterSaurus.fzz
+rm -f sketches/core/Fritzing\ Creator\ Kit\ DE+EN/creator-kit-*/Processing/twitter4j-core-2.2.5.jar
+rm -rf sketches/core/Fritzing\ Creator\ Kit\ DE+EN/creator-kit-*/Processing/TwitterSaurus*
+rm -f sketches/core/obsolete/TwitterSaurus.fzz
+# appstream rejects this url type
+sed -e '/<url type="forum">/d' -i org.fritzing.Fritzing.appdata.xml
 
-LIBGIT_STATIC=false %qmake_qt5 phoenix.pro DEFINES=QUAZIP_INSTALLED
 mv fritzing-parts-develop parts
 cp %{S:10} parts/
 tar xf %{S:11}
 cp -a Fritzing-Library-master/parts/* parts/
 cp -a Fritzing-Library-master/*.fzbz parts/bins/more/
 cp -a Fritzing-Library-master/RPi_B parts/
+rm -rf Fritzing-Library-master parts/.github .github
 
 %build
+export FRITZING_GIT_VERSION="5aa56a5"
+export FRITZING_GIT_DATE="2026-07-28"
+export FRITZING_BUILD_DATE="$(date --iso-8601=seconds)"
+%if "%{_lib}" == "lib64"
+export FRITZING_PLATFORM="LINUX_64"
+%else
+export FRITZING_PLATFORM="LINUX_32"
+%endif
+
+# .qm files are collected at qmake time for make install
+lrelease phoenix.pro
+%set_build_flags
+qmake-qt6 phoenix.pro PREFIX=%{_prefix} \
+	QMAKE_CFLAGS="${CFLAGS}" \
+	QMAKE_CXXFLAGS="${CXXFLAGS}" \
+	QMAKE_LFLAGS="${LDFLAGS}"
 %make_build release
-./Fritzing -platform minimal -f ./parts -db ./parts/parts.db
+./Fritzing -platform offscreen -f . -pp ./parts -db ./parts/parts.db
 
 %install
 %make_install INSTALL_ROOT=%{buildroot}
+# make install may skip extra files we dropped into parts/
 cp -a parts %{buildroot}%{_datadir}/fritzing/
+find %{buildroot}%{_datadir}/fritzing -type f -exec chmod 644 '{}' ';'
+find %{buildroot}%{_datadir}/fritzing -type d -exec chmod 755 '{}' ';'
 
 %files
 %defattr(-,root,root)
-%doc LICENSE.CC-BY-SA LICENSE.GPL2 LICENSE.GPL3
+%doc README.md LICENSE.CC-BY-SA LICENSE.GPL2 LICENSE.GPL3
 %{_datadir}/fritzing
 %{_datadir}/pixmaps/fritzing.png
 %{_datadir}/applications/org.fritzing.Fritzing.desktop

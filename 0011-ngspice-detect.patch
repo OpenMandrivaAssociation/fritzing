@@ -1,0 +1,27 @@
+--- fritzing-app-a8c6ef7cf66f7a42b9b233d6137f1b70a9573a25--orig/pri/spicedetect.pri	2024-10-07 11:50:11.000000000 +0200
++++ fritzing-app-a8c6ef7cf66f7a42b9b233d6137f1b70a9573a25--patched/pri/spicedetect.pri	2024-11-06 21:07:47.948219063 +0100
+@@ -13,14 +13,14 @@
+ # along with Fritzing. If not, see <http://www.gnu.org/licenses/>.
+ # ********************************************************************/
+ 
+ 
+-message("Using fritzing ngspice detect script.")
+-NGSPICEPATH = ../../ngspice-42
+-NGSPICEPATH = $$absolute_path($${NGSPICEPATH})
+-
+-exists($$NGSPICEPATH) {
+-	message("found $${NGSPICEPATH}")
+-	INCLUDEPATH += $$NGSPICEPATH/include
+-} else {
+-    error("ngspice not found in $${NGSPICEPATH}")
+-}
++#message("Using fritzing ngspice detect script.")
++#NGSPICEPATH = ../../ngspice-42
++#NGSPICEPATH = $$absolute_path($${NGSPICEPATH})
++#
++#exists($$NGSPICEPATH) {
++#	message("found $${NGSPICEPATH}")
++#	INCLUDEPATH += $$NGSPICEPATH/include
++#} else {
++#    error("ngspice not found in $${NGSPICEPATH}")
++#}
