@@ -48,6 +48,7 @@ BuildRequires:	pkgconfig(gl)
 BuildRequires:	pkgconfig(quazip1-qt6)
 BuildRequires:	qmake-qt6
 BuildRequires:	qt6-qttools-linguist-tools
+BuildRequires:	make
 BuildRequires:	boost-devel
 # Simulator dlopens libngspice; the library is extra-only
 Recommends:	%{_lib}ngspice
